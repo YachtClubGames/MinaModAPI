@@ -5,8 +5,11 @@
 !! would downloading an .exe file!
 !!!!!!!!!!
 
-	Modding functionality is currently in the "experimental-modding" branch
-	on Steam, the password is 'modsmodsmods'
+	             Modding functionality is currently in the
+	               "experimental-modding" branch on Steam
+###
+# Quick Start
+#
 
 Mods live in a folder at %appdata%\Yacht Club Games\Mina the Hollower\mods
 * Each mod has a separate folder.
@@ -45,3 +48,19 @@ Other arguments:
 -mod-allow-code
   If a mod contains a mod.dll, load it. If the mod exposes a function named
   MinaMod_Init it will be called and passed a MinaModAPI pointer.
+
+###
+# Hooks
+#
+
+FixedUpdate
+
+	struct FixedUpdateCtx {
+		float elapsed; // frame delta, 1/60 or 1/120
+	}
+
+GameStateTransition
+
+	struct GameStateTransitionCtx {
+		int32_t* pGameState; // pointer to the destination game state, can be modified
+	}

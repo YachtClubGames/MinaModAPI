@@ -44,6 +44,22 @@ typedef bool( *MM_IsInputDownOrHeld )( uint32_t act_or_btn_or_key );
 typedef void( *MM_HookCallback )( void* pCtx );
 typedef void*( *MM_InstallHookFP )( const char* hookName, int32_t priority, MM_HookCallback hookCallback );
 typedef void( *MM_RemoveHookFP )( void* pHookHandle );
+typedef void( *MM_RunHooksFP)( uint64_t hookNameHash, void* ctx );
+
+typedef uint32_t( *MM_GetEnumUIntFP )( const char* name );
+typedef int32_t( *MM_GetEnumIntFP )( const char* name );
+typedef uint64_t( *MM_GetEnumUInt64FP )( const char* name );
+typedef int64_t( *MM_GetEnumInt64FP )( const char* name );
+typedef uint32_t( *MM_GetEnumHashedUIntFP )( uint64_t nameHash );
+typedef int32_t( *MM_GetEnumHashedIntFP )( uint64_t nameHash );
+typedef uint64_t( *MM_GetEnumHashedUInt64FP )( uint64_t nameHash );
+typedef int64_t( *MM_GetEnumHashedInt64FP )( uint64_t nameHash );
+
+typedef uintptr_t( *MM_GetSharedValueFP )( const char* name );
+typedef void( *MM_SetSharedValueFP )( const char* name, uintptr_t val );
+
+typedef uint32_t( *MM_Hash32FP )( const void* data, size_t len );
+typedef uint64_t( *MM_Hash64FP )( const void* data, size_t len );
 
 struct MinaModAPI
 {
@@ -157,4 +173,23 @@ struct MinaModAPI
 	// misc/debug
 	MM_VoidFP WarpToBoss;
 	MM_VoidFP WarpToMiniBoss;
+
+	MM_GetEnumUIntFP GetEnumUInt;
+	MM_GetEnumIntFP GetEnumInt;
+	MM_GetEnumUInt64FP GetEnumUInt64;
+	MM_GetEnumInt64FP GetEnumInt64;
+	MM_GetEnumHashedUIntFP GetEnumHashedUInt;
+	MM_GetEnumHashedIntFP GetEnumHashedInt;
+	MM_GetEnumHashedUInt64FP GetEnumHashedUInt64;
+	MM_GetEnumHashedInt64FP GetEnumHashedInt64;
+
+	MM_GetSharedValueFP GetSharedValue; // a look up table accessible by all mods
+	MM_SetSharedValueFP SetSharedValue;
+
+	MM_Hash32FP Hash32;
+	MM_Hash64FP Hash64;
+
+	MM_RunHooksFP RunHooks;
+
+	MM_GetUIntFP GetGameRevision;
 };
