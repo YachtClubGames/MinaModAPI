@@ -1,15 +1,5 @@
 #include "MinaModAPI.h"
-
-#define YC_KEY_F1 97
-#define YC_KEY_F2 98
-
-#define YC_KEY_Z 69
-#define YC_KEY_X 67
-#define YC_KEY_C 46
-#define YC_KEY_V 65
-
-#define YC_KEY_LCTRL 118
-#define YC_KEY_RCTRL 117
+#include "MinaEnums.h"
 
 MinaModAPI* Mina = nullptr;
 char* copiedSave = nullptr;
