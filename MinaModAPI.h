@@ -192,4 +192,7 @@ struct MinaModAPI
 	MM_RunHooksFP RunHooks;
 
 	MM_GetUIntFP GetGameRevision;
+
+	MM_VoidFP PlayerFlushToSave;
+	MM_VoidFP PlayerRestoreFromSave;
 };
