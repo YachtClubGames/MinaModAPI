@@ -11,7 +11,7 @@
 enum { MinaModAPI_Version = 1 };
 
 typedef void( *MM_HookCallback )( void* pCtx );
-typedef void( *MM_RenderFunc )( struct MM_RenderCtx* ctx );
+typedef void( *MM_RenderFunc )( void* userData, struct MM_RenderCtx* ctx );
 
 struct MinaModAPI
 {
@@ -149,13 +149,13 @@ struct MinaModAPI
 	void      ( *PlayerRestoreFromSave )();
 
 	// audio
-	void( *SoundPlay )( const char* name );
-	bool( *SoundIsPlaying )( const char* name );
-	void( *SoundStop )( const char* name );
-	void( *MusicPlay )( const char* name );
-	void( *MusicStop )();
-	bool( *MusicIsAnyPlaying )();
-	bool( *MusicIsPlaying )( const char* name );
+	void      ( *SoundPlay )( const char* name );
+	bool      ( *SoundIsPlaying )( const char* name );
+	void      ( *SoundStop )( const char* name );
+	void      ( *MusicPlay )( const char* name );
+	void      ( *MusicStop )();
+	bool      ( *MusicIsAnyPlaying )();
+	bool      ( *MusicIsPlaying )( const char* name );
 
 	//
 	// rendering
@@ -196,7 +196,7 @@ struct MinaModAPI
 		hudEngine
 	*/
 	MM_CLASS ycRenderPass*( *GetRenderPass )( const char* name );
-	struct MinaModRenderObject*( *CreateRenderObject )( MM_CLASS ycRenderPass* renderPass, MM_RenderFunc renderFunc );
+	struct MinaModRenderObject*( *CreateRenderObject )( MM_CLASS ycRenderPass* renderPass, MM_RenderFunc renderFunc, void* userData );
 	void( *DestroyRenderObject )( struct MinaModRenderObject* renderObject );
 	const union MM_Mtx*( *GetRenderObjectTransform )( struct MinaModRenderObject* renderObject );
 	void( *SetRenderObjectTransform )( struct MinaModRenderObject* renderObject, const union MM_Mtx* transform ); // transform should be modified from update, not MM_RenderFunc
