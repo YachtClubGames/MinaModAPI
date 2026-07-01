@@ -170,7 +170,7 @@ struct MinaModAPI
 	void( *DestroyTexture )( MM_CLASS ycTexture* tex );
 
 	MM_CLASS ycGpuBuffer* ( *CreateIndexBuffer )( uint32_t count ); // index buffer data is uint32_t[count]
-	MM_CLASS ycGpuBuffer* ( *CreateVertexBuffer )( uint32_t count );
+	MM_CLASS ycGpuBuffer* ( *CreateVertexBuffer )( uint32_t count ); // vertex buffer data is MM_Vertex_PTC[count]
 	void( *UpdateGpuBuffer )( MM_CLASS ycGpuBuffer* ib , const void* data );
 	void( *DestroyGpuBuffer )( MM_CLASS ycGpuBuffer* ib );
 
