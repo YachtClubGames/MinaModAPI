@@ -64,3 +64,8 @@ GameStateTransition
 	struct GameStateTransitionCtx {
 		int32_t* pGameState; // pointer to the destination game state, can be modified
 	}
+
+GameShutdown
+WorldConstruct
+WorldDestroy
+WorldUpdate

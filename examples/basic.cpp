@@ -1,5 +1,5 @@
 #include "MinaModAPI.h"
-#include "MinaEnums.h"
+#include "MinaModEnums.h"
 
 MinaModAPI* Mina = nullptr;
 char* copiedSave = nullptr;
