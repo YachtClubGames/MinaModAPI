@@ -46,14 +46,14 @@ void FixedUpdate( void* )
         uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
         Mina->UpdateGpuBuffer( indexBuffer, indices );
 
-        Mina->CreateRenderObject( Mina->GetRenderPass( "hudEngine" ), []( MM_RenderCtx* ctx )
+        Mina->CreateRenderObject( Mina->GetRenderPass( "hudEngine" ), []( void*, MM_RenderCtx* ctx )
         {
             ycRenderDrawCall* dc = ctx->drawCall;
             Mina->RenderDrawCallSetIndexBuffer( dc, indexBuffer );
             Mina->RenderDrawCallSetVertexBuffer( dc, vertexBuffer );
             Mina->RenderDrawCallSetTexture( dc, texture );
             Mina->RenderCmdDrawIndexed( ctx->cmdList, dc, 6, 0 );
-        });
+        }, nullptr );
     }
 
     // update vertices
