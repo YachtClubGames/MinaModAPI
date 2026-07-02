@@ -33,6 +33,43 @@ union MM_Mtx
 	float m[ 4 ][ 4 ];
 };
 
+struct MM_Quat
+{
+	float x, y, z, w;
+};
+
+struct MM_Transform
+{
+	struct MM_Quat r; // rotation
+	struct MM_Vec3 s; // scale
+	struct MM_Vec3 t; // translation
+};
+
+struct MM_AABB
+{
+	struct MM_Vec3 center;
+	struct MM_Vec3 extents;
+};
+
+struct MM_Sphere
+{
+	struct MM_Vec3 center;
+	float radius;
+};
+
+struct MM_LineSeg
+{
+	struct MM_Vec3 p1, p2;
+};
+
+struct MM_StringRef // this is not gauranteed to be NUL terminated (but often is)
+{
+	const char* str;
+	size_t len;
+};
+
+typedef uint64_t MM_Rtti;
+
 struct MinaModRenderObject;
 
 MM_CLASS ycRenderObject;
@@ -57,3 +94,11 @@ struct MM_Vertex_PTC
 	float           u, v;
 	struct MM_Color color;
 };
+
+MM_CLASS ycComponent;
+MM_CLASS ycDrawUtil;
+MM_CLASS ycEntity;
+
+MM_CLASS World;
+MM_CLASS CombatShape;
+MM_CLASS GameAnim;

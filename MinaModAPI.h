@@ -157,9 +157,7 @@ struct MinaModAPI
 	bool      ( *MusicIsAnyPlaying )();
 	bool      ( *MusicIsPlaying )( const char* name );
 
-	//
 	// rendering
-	//
 
 	/*
 	render resource management functions must be run in the standard update,
@@ -207,4 +205,76 @@ struct MinaModAPI
 	
 	void( *RenderCmdDraw )( MM_CLASS ycRenderCmdList* cmds, struct ycRenderDrawCall* dc, uint32_t vertexCount, uint32_t startVertex );
 	void( *RenderCmdDrawIndexed )( MM_CLASS ycRenderCmdList* cmds, struct ycRenderDrawCall* dc, uint32_t indexCount, uint32_t startIndex );
+
+	// debug draw functions should be used from the game update, not from MM_RenderFunc
+	/* valid debug draw names:
+	World
+	WorldBlend
+	WorldHD
+	Hud
+	GameHud
+	WorldPersist
+	EngineHUD
+	*/
+	MM_CLASS ycDrawUtil*( *GetDebugDraw )( const char* name );
+	void( *DebugDrawRect )( MM_CLASS ycDrawUtil* dd, struct MM_Vec3 center, float w, float h, struct MM_Color color, bool disableDepthTest );
+	void( *DebugDrawRectSolid )( MM_CLASS ycDrawUtil* dd, struct MM_Vec3 center, float w, float h, struct MM_Color color, bool disableDepthTest );
+	void( *DebugDrawLine )( MM_CLASS ycDrawUtil* dd, struct MM_Vec3 p1, struct MM_Vec3 p2, struct MM_Color color, bool disableDepthTest );
+	void( *DebugDrawTexturedQuad )( MM_CLASS ycDrawUtil* dd, MM_CLASS ycTexture* tex, struct MM_Vec3 center, float w, float h, struct MM_Color mulColor, bool disableDepthTest );
+
+	// entities & components
+
+	MM_CLASS ycComponent* ( *SpawnEntity2 )( MM_CLASS ycEntity* parent, uint32_t entityType, struct MM_Vec3 pos, struct MM_Vec3 scale, float rot, int32_t collisionLayer, void*, void*, void* ); // set last three parameters to nullptr
+
+	MM_CLASS ycEntity* ( *WorldGetGameRootEntity )( MM_CLASS World* world );
+	MM_CLASS ycEntity* ( *WorldGetSystemRootEntity )( MM_CLASS World* world );
+	MM_CLASS ycEntity* ( *WorldGetMenuRootEntity )( MM_CLASS World* world );
+	MM_CLASS ycEntity* ( *WorldGetHUDRootEntity )( MM_CLASS World* world );
+	MM_CLASS World* ( *EntityGetWorld )( MM_CLASS ycEntity* entity );
+	size_t( *EntityGetChildren )( MM_CLASS ycEntity* entity, MM_CLASS ycComponent** children, size_t bufElemCount ); // always returns the total count even if the buffer is not large enough; pass null/0 to just get the count
+	MM_CLASS ycComponent* ( *EntityGetMainComponent )( MM_CLASS ycEntity* entity );
+	struct MM_StringRef( *ComponentGetTypeName )( MM_CLASS ycComponent* component );
+	MM_CLASS ycComponent* ( *PlayerGetComponent )();
+	MM_CLASS ycEntity* ( *ComponentGetParent )( MM_CLASS ycComponent* component );
+	MM_Rtti( *ComponentGetType )( MM_CLASS ycComponent* component );
+	bool( *ComponentIsa )( MM_CLASS ycComponent* component, MM_Rtti rtti ); // includes inheritance
+	struct MM_Transform ( *EntityGetLocalTransform )( MM_CLASS ycEntity* entity );
+	void( *EntitySetLocalTransform )( MM_CLASS ycEntity* entity, const struct MM_Transform* transform );
+	struct MM_Transform ( *EntityGetWorldTransform )( MM_CLASS ycEntity* entity );
+	void( *EntitySetWorldTransform )( MM_CLASS ycEntity* entity, const struct MM_Transform* transform );
+	void( *ComponentMove )( MM_CLASS ycComponent* component, struct MM_Vec3 vel ); // works through a MoveComponent, if a relevant one exists; does nothing otherwise
+
+	// CombatCore component
+	float( *CombatCoreGetHealth )( MM_CLASS ycComponent* combatCore );
+	void( *CombatCoreSetHealth )( MM_CLASS ycComponent* combatCore, float hp );
+	float( *CombatCoreGetHealthMax )( MM_CLASS ycComponent* combatCore );
+	void( *CombatCoreSetHealthMax )( MM_CLASS ycComponent* combatCore, float hp );
+	MM_CLASS CombatShape* ( *CombatCoreGetAttackShape )( MM_CLASS ycComponent* combatCore );
+	MM_CLASS CombatShape* ( *CombatCoreGetDefenseShape )( MM_CLASS ycComponent* combatCore );
+	uint32_t ( *CombatCoreGetAttackMask )( MM_CLASS ycComponent* combatCore );
+	void ( *CombatCoreSetAttackMask )( MM_CLASS ycComponent* combatCore, uint32_t mask );
+	uint32_t ( *CombatCoreGetDefenseMask )( MM_CLASS ycComponent* combatCore );
+	void ( *CombatCoreSetDefenseMask )( MM_CLASS ycComponent* combatCore, uint32_t mask );
+	uint32_t( *CombatShapeGetShapeCount )( MM_CLASS CombatShape* shape );
+	bool( *CombatShapeIsAABB )( MM_CLASS CombatShape* shape, uint32_t shapeIndex );
+	bool( *CombatShapeIsSphere )( MM_CLASS CombatShape* shape, uint32_t shapeIndex );
+	bool( *CombatShapeIsLineSeg )( MM_CLASS CombatShape* shape, uint32_t shapeIndex );
+	bool( *CombatShapeGetAABB )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, struct MM_AABB* aabb ); // returns false if shape is not an AABB
+	bool( *CombatShapeGetSphere )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, struct MM_Sphere* sphere );
+	bool( *CombatShapeGetLineSeg )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, struct MM_LineSeg* lineSeg );
+	void( *CombatShapeSetAABB )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, const struct MM_AABB* aabb ); // these functions can append a new shape
+	void( *CombatShapeSetSphere )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, const struct MM_Sphere* sphere );
+	void( *CombatShapeSetLineSeg )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, const struct MM_LineSeg* lineSeg );
+
+	// GameAnim component
+	void( *GameAnimInit )( MM_CLASS ycComponent* anim, const char* filename, void* ); // set second argument to null
+	void( *GameAnimPlayDir )( MM_CLASS ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
+	void( *GameAnimPlay )( MM_CLASS ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
+	bool( *GameAnimIsPaused )( MM_CLASS ycComponent* anim );
+	void( *GameAnimSetPaused )( MM_CLASS ycComponent* anim, bool paused );
+	bool( *GameAnimIsDone )( MM_CLASS ycComponent* anim );
+	bool( *GameAnimIsNewFrame )( MM_CLASS ycComponent* anim );
+	uint32_t( *GameAnimGetSeqFrameIdx )( MM_CLASS ycComponent* anim );
+	struct MM_StringRef( *GameAnimGetSeqName )( MM_CLASS ycComponent* anim );
+	struct MM_StringRef( *GameAnimGetSeqNameNoDir )( MM_CLASS ycComponent* anim );
 };

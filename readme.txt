@@ -66,6 +66,18 @@ GameStateTransition
 	}
 
 GameShutdown
+
 WorldConstruct
+	struct WorldConstructCtx {
+		World* world;
+	}
+
 WorldDestroy
+	struct WorldDestroyCtx {
+		World* world;
+	}
+
 WorldUpdate
+	struct WorldUpdateCtx {
+		World* world;
+	}
