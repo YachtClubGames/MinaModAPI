@@ -52,7 +52,7 @@ void TraverseCombat( ycEntity* entity )
     Mina->Free( components );
 };
 
-void WorldUpdate( void* )
+void WorldUpdate( void* pCtx )
 {
 	struct WorldUpdateCtx
 	{
