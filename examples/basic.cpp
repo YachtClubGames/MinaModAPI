@@ -24,6 +24,7 @@ void FixedUpdate( void* )
         {
             Mina->Free( copiedSave );
         }
+		Mina->PlayerFlushToSave(); // some variables don't directly read/write to save data, make sure those get written too
         copiedSave = Mina->GetActiveSaveSlotContents();
     }
     if( Mina->IsKeyDown( YC_KEY_V ) && isCtrl )
@@ -32,6 +33,7 @@ void FixedUpdate( void* )
         if( copiedSave )
         {
             Mina->SetActiveSaveSlotContents( copiedSave );
+			Mina->PlayerRestoreFromSave();
             Mina->StartActiveSaveSlot();
         }
         else
