@@ -7,7 +7,7 @@ char* copiedSave = nullptr;
 void FixedUpdate( void* );
 
 extern "C"
-__declspec(dllexport)
+MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {
     Mina = mm;

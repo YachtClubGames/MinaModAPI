@@ -8,6 +8,13 @@
 
 #include "MinaModTypes.h"
 
+// portable export attribute for the MinaMod_Init entry point
+#ifdef _WIN32
+	#define MM_EXPORT __declspec(dllexport)
+#else
+	#define MM_EXPORT __attribute__(( visibility( "default" ) ))
+#endif
+
 enum { MinaModAPI_Version = 1 };
 
 typedef void( *MM_HookCallback )( void* pCtx );
