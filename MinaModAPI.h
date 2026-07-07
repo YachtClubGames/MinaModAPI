@@ -12,6 +12,7 @@ enum { MinaModAPI_Version = 1 };
 
 typedef void( *MM_HookCallback )( void* pCtx );
 typedef void( *MM_RenderFunc )( void* userData, struct MM_RenderCtx* ctx );
+typedef void( *MM_UpdateQueueCallback )( void* userData );
 
 struct MinaModAPI
 {
@@ -277,4 +278,33 @@ struct MinaModAPI
 	uint32_t( *GameAnimGetSeqFrameIdx )( MM_CLASS ycComponent* anim );
 	struct MM_StringRef( *GameAnimGetSeqName )( MM_CLASS ycComponent* anim );
 	struct MM_StringRef( *GameAnimGetSeqNameNoDir )( MM_CLASS ycComponent* anim );
+
+	// update queues
+	MM_CLASS ycUpdateQueue*( *WorldGetPlayerUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetEntityUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetEntityHitUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetSystemPreUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetSystemPostUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetEntityPostUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetEntityPostArtUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetEntityPreUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetPostSimUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetHUDUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetPauseUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *WorldGetPauseCheckUpdateQueue )( MM_CLASS World* world );
+	MM_CLASS ycUpdateQueue*( *GameGetWorldUpdateQueue )(); // the game's update queue of worlds
+	void*( *UpdateQueueAdd )( MM_CLASS ycUpdateQueue* updateQueue, MM_UpdateQueueCallback cb, void* userData ); // returns a handle to be used with UpdateQueueRemove
+	void( *UpdateQueueRemove )( void* handle );
+
+	// pause
+	void( *WorldPause )( MM_CLASS World* world, bool menu );
+	void( *WorldResume )( MM_CLASS World* world );
+	bool( *WorldIsPaused )( MM_CLASS World* world );
+	bool( *WorldIsPauseAllowed )( MM_CLASS World* world );
+	void( *WorldSetPauseAllowed )( MM_CLASS World* world, bool enable );
+
+	// weak pointers / safe references
+	struct MM_WeakPtr*( *WeakPtrCreate )( void* componentOrEntity );
+	void( *WeakPtrDestroy )( struct MM_WeakPtr* weakPtr );
+	void* ( *WeakPtrGet )( struct MM_WeakPtr* weakPtr );
 };

@@ -102,3 +102,8 @@ MM_CLASS ycEntity;
 MM_CLASS World;
 MM_CLASS CombatShape;
 MM_CLASS GameAnim;
+
+MM_CLASS ycUpdateQueue;
+
+struct MM_WeakPtr;
+

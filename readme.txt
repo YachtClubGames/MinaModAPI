@@ -54,13 +54,11 @@ Other arguments:
 #
 
 FixedUpdate
-
 	struct FixedUpdateCtx {
 		float elapsed; // frame delta, 1/60 or 1/120
 	}
 
 GameStateTransition
-
 	struct GameStateTransitionCtx {
 		int32_t* pGameState; // pointer to the destination game state, can be modified
 	}
@@ -78,6 +76,11 @@ WorldDestroy
 	}
 
 WorldUpdate
+	struct WorldUpdateCtx {
+		World* world;
+	}
+
+WorldUpdateEnd // occurs in the same function as WorldUpdate, but after other objects and systems have updated
 	struct WorldUpdateCtx {
 		World* world;
 	}
