@@ -268,7 +268,7 @@ struct MinaModAPI
 	void( *CombatShapeSetLineSeg )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, const struct MM_LineSeg* lineSeg );
 
 	// GameAnim component
-	void( *GameAnimInit )( MM_CLASS ycComponent* anim, const char* filename, void* ); // set second argument to null
+	void( *GameAnimInit )( MM_CLASS ycComponent* anim, const char* filename, void* ); // set third argument to null
 	void( *GameAnimPlayDir )( MM_CLASS ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
 	void( *GameAnimPlay )( MM_CLASS ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
 	bool( *GameAnimIsPaused )( MM_CLASS ycComponent* anim );
