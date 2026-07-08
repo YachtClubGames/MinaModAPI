@@ -6,6 +6,59 @@
 	#define MM_CLASS struct
 #endif
 
+//
+// engine
+//
+
+// direct access to engine level classes/structs
+
+MM_CLASS ycComponent;
+MM_CLASS ycDrawUtil;
+MM_CLASS ycEntity;
+MM_CLASS ycUpdateQueue;
+MM_CLASS ycRenderObject;
+MM_CLASS ycRenderPass;
+MM_CLASS ycGpuBuffer;
+MM_CLASS ycTexture;
+MM_CLASS ycRenderCmdList;
+struct ycRenderDrawCall;
+MM_CLASS ycFileRefBase;
+
+//
+// file formats
+//
+
+struct ycTileLevel2Entity;
+
+//
+// game
+//
+
+// direct access to game level classes/structs
+
+MM_CLASS CombatShape;
+MM_CLASS GameAnim;
+MM_CLASS GameComponent;
+MM_CLASS SpawnManager;
+MM_CLASS SpawnPoint;
+MM_CLASS World;
+MM_CLASS WorldRegion;
+
+//
+// mod utilities
+//
+
+// MM_ remappings from engine/game classes and structs to mod-visible versions
+//   these generally have the same data layout as yc versions
+// MinaMod wrappers for engine concepts
+//   these convert engine features to simpler forms
+
+typedef void( *MinaModRenderFunc )( void* userData, struct MinaModRenderCtx* ctx );
+typedef void( *MinaModUpdateQueueCallback )( void* userData );
+
+struct MinaModRenderObject;
+struct MM_WeakPtr;
+
 struct MM_Color
 {
 	uint8_t r, g, b, a;
@@ -70,16 +123,7 @@ struct MM_StringRef // this is not gauranteed to be NUL terminated (but often is
 
 typedef uint64_t MM_Rtti;
 
-struct MinaModRenderObject;
-
-MM_CLASS ycRenderObject;
-MM_CLASS ycRenderPass;
-MM_CLASS ycGpuBuffer;
-MM_CLASS ycTexture;
-MM_CLASS ycRenderCmdList;
-struct ycRenderDrawCall;
-
-struct MM_RenderCtx
+struct MinaModRenderCtx
 {
 	struct MinaModRenderObject* renderObject;
 	const union MM_Mtx* proj;
@@ -94,16 +138,3 @@ struct MM_Vertex_PTC
 	float           u, v;
 	struct MM_Color color;
 };
-
-MM_CLASS ycComponent;
-MM_CLASS ycDrawUtil;
-MM_CLASS ycEntity;
-
-MM_CLASS World;
-MM_CLASS CombatShape;
-MM_CLASS GameAnim;
-
-MM_CLASS ycUpdateQueue;
-
-struct MM_WeakPtr;
-

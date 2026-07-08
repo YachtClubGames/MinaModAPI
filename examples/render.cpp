@@ -46,7 +46,7 @@ void FixedUpdate( void* )
         uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
         Mina->UpdateGpuBuffer( indexBuffer, indices );
 
-        Mina->CreateRenderObject( Mina->GetRenderPass( "hudEngine" ), []( void*, MM_RenderCtx* ctx )
+        Mina->CreateRenderObject( Mina->GetRenderPass( "hudEngine" ), []( void*, MinaModRenderCtx* ctx )
         {
             ycRenderDrawCall* dc = ctx->drawCall;
             Mina->RenderDrawCallSetIndexBuffer( dc, indexBuffer );

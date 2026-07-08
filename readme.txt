@@ -63,6 +63,8 @@ GameStateTransition
 		int32_t* pGameState; // pointer to the destination game state, can be modified
 	}
 
+GameInit // a bit later than MinaMod_Init, after most systems are initialized
+
 GameShutdown
 
 WorldConstruct
