@@ -80,9 +80,11 @@ WorldDestroy
 WorldUpdate
 	struct WorldUpdateCtx {
 		World* world;
+		float elapsed;
 	}
 
 WorldUpdateEnd // occurs in the same function as WorldUpdate, but after other objects and systems have updated
 	struct WorldUpdateCtx {
 		World* world;
+		float elapsed;
 	}

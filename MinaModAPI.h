@@ -6,6 +6,24 @@
 	#include <stdbool.h> // c bool
 #endif
 
+// if you have the classes from here:
+// https://github.com/YachtClubGames/Propeller
+// you can set this to use the real types directly
+//#if defined __cplusplus && defined __has_include && __has_include("ycCommon.h")
+	/*
+	This must remain off for now, it is ABI-incompatible, we can resolve this
+	when we are moving out of experimental, when there will be other ABI-breaking
+	changes anyway. Specifically, on Windows, functions that return MM_ types by
+	value are not compatible.
+	https://learn.microsoft.com/en-us/cpp/build/x64-calling-convention?view=msvc-170#return-values
+
+	You _can_ use the Propeller types yourself, casting MM_ types to their yc
+	equivalents will work in your mod code. But the mod API functions cannot
+	safely return some of them by value.
+	*/
+	//#define MM_USE_YC_TYPES
+//#endif
+
 #include "MinaModTypes.h"
 
 enum { MinaModAPI_Version = 1 };
@@ -162,14 +180,14 @@ struct MinaModAPI
 	render resource management functions must be run in the standard update,
 	they _cannot be run from inside MinaModRenderFunc_.
 	*/
-	MM_CLASS ycTexture*( *CreateTexture )( uint32_t width, uint32_t height ); // texture is MM_Color[width*height]
-	void( *UpdateTexture )( MM_CLASS ycTexture* tex, const void* data );
-	void( *DestroyTexture )( MM_CLASS ycTexture* tex );
+	ycTexture*   ( *CreateTexture )( uint32_t width, uint32_t height ); // texture is MM_Color[width*height]
+	void         ( *UpdateTexture )( ycTexture* tex, const void* data );
+	void         ( *DestroyTexture )( ycTexture* tex );
 
-	MM_CLASS ycGpuBuffer* ( *CreateIndexBuffer )( uint32_t count ); // index buffer data is uint32_t[count]
-	MM_CLASS ycGpuBuffer* ( *CreateVertexBuffer )( uint32_t count ); // vertex buffer data is MM_Vertex_PTC[count]
-	void( *UpdateGpuBuffer )( MM_CLASS ycGpuBuffer* ib , const void* data );
-	void( *DestroyGpuBuffer )( MM_CLASS ycGpuBuffer* ib );
+	ycGpuBuffer* ( *CreateIndexBuffer )( uint32_t count ); // index buffer data is uint32_t[count]
+	ycGpuBuffer* ( *CreateVertexBuffer )( uint32_t count ); // vertex buffer data is MM_Vertex_PTC[count]
+	void         ( *UpdateGpuBuffer )( ycGpuBuffer* ib , const void* data );
+	void         ( *DestroyGpuBuffer )( ycGpuBuffer* ib );
 
 	/* valid render pass names:
 		opaqueLayersArea[0], opaqueLayersArea[1], opaqueLayersArea[2], opaqueLayersArea[3]
@@ -192,18 +210,18 @@ struct MinaModAPI
 		postProcess
 		hudEngine
 	*/
-	MM_CLASS ycRenderPass*( *GetRenderPass )( const char* name );
-	struct MinaModRenderObject*( *CreateRenderObject )( MM_CLASS ycRenderPass* renderPass, MinaModRenderFunc renderFunc, void* userData );
-	void( *DestroyRenderObject )( struct MinaModRenderObject* renderObject );
-	const union MM_Mtx*( *GetRenderObjectTransform )( struct MinaModRenderObject* renderObject );
-	void( *SetRenderObjectTransform )( struct MinaModRenderObject* renderObject, const union MM_Mtx* transform ); // transform should be modified from update, not MinaModRenderFunc
+	ycRenderPass*       ( *GetRenderPass )( const char* name );
+	MinaModRenderObject*( *CreateRenderObject )( ycRenderPass* renderPass, MinaModRenderFunc renderFunc, void* userData );
+	void                ( *DestroyRenderObject )( MinaModRenderObject* renderObject );
+	const MM_Mtx*       ( *GetRenderObjectTransform )( MinaModRenderObject* renderObject );
+	void                ( *SetRenderObjectTransform )( MinaModRenderObject* renderObject, const MM_Mtx* transform ); // transform should be modified from update, not MinaModRenderFunc
 
-	void( *RenderDrawCallSetIndexBuffer )( struct ycRenderDrawCall* dc, MM_CLASS ycGpuBuffer* ib );
-	void( *RenderDrawCallSetVertexBuffer )( struct ycRenderDrawCall* dc, MM_CLASS ycGpuBuffer* vb );
-	void( *RenderDrawCallSetTexture )( struct ycRenderDrawCall* dc, MM_CLASS ycTexture* tex );
+	void                ( *RenderDrawCallSetIndexBuffer )( ycRenderDrawCall* dc, ycGpuBuffer* ib );
+	void                ( *RenderDrawCallSetVertexBuffer )( ycRenderDrawCall* dc, ycGpuBuffer* vb );
+	void                ( *RenderDrawCallSetTexture )( ycRenderDrawCall* dc, ycTexture* tex );
 	
-	void( *RenderCmdDraw )( MM_CLASS ycRenderCmdList* cmds, struct ycRenderDrawCall* dc, uint32_t vertexCount, uint32_t startVertex );
-	void( *RenderCmdDrawIndexed )( MM_CLASS ycRenderCmdList* cmds, struct ycRenderDrawCall* dc, uint32_t indexCount, uint32_t startIndex );
+	void                ( *RenderCmdDraw )( ycRenderCmdList* cmds, ycRenderDrawCall* dc, uint32_t vertexCount, uint32_t startVertex );
+	void                ( *RenderCmdDrawIndexed )( ycRenderCmdList* cmds, ycRenderDrawCall* dc, uint32_t indexCount, uint32_t startIndex );
 
 	// debug draw functions should be used from the game update, not from MinaModRenderFunc
 	/* valid debug draw names:
@@ -212,119 +230,119 @@ struct MinaModAPI
 		WorldPersist
 		EngineHUD
 	*/
-	MM_CLASS ycDrawUtil*( *GetDebugDraw )( const char* name );
-	void( *DebugDrawRect )( MM_CLASS ycDrawUtil* dd, struct MM_Vec3 center, float w, float h, struct MM_Color color, bool disableDepthTest );
-	void( *DebugDrawRectSolid )( MM_CLASS ycDrawUtil* dd, struct MM_Vec3 center, float w, float h, struct MM_Color color, bool disableDepthTest );
-	void( *DebugDrawLine )( MM_CLASS ycDrawUtil* dd, struct MM_Vec3 p1, struct MM_Vec3 p2, struct MM_Color color, bool disableDepthTest );
-	void( *DebugDrawTexturedQuad )( MM_CLASS ycDrawUtil* dd, MM_CLASS ycTexture* tex, struct MM_Vec3 center, float w, float h, struct MM_Color mulColor, bool disableDepthTest );
+	ycDrawUtil*( *GetDebugDraw )( const char* name );
+	void       ( *DebugDrawRect )( ycDrawUtil* dd, MM_Vec3 center, float w, float h, MM_Color color, bool disableDepthTest );
+	void       ( *DebugDrawRectSolid )( ycDrawUtil* dd, MM_Vec3 center, float w, float h, MM_Color color, bool disableDepthTest );
+	void       ( *DebugDrawLine )( ycDrawUtil* dd, MM_Vec3 p1, MM_Vec3 p2, MM_Color color, bool disableDepthTest );
+	void       ( *DebugDrawTexturedQuad )( ycDrawUtil* dd, ycTexture* tex, MM_Vec3 center, float w, float h, MM_Color mulColor, bool disableDepthTest );
 
 	// entities & components
 
-	MM_CLASS GameComponent* ( *SpawnEntity2 )( MM_CLASS ycEntity* parent, uint32_t entityType, struct MM_Vec3 pos, struct MM_Vec3 scale, float rot, int32_t collisionLayer, MM_CLASS SpawnPoint* spawnPoint, void*, void* ); // set last two parameters to nullptr
+	GameComponent*( *SpawnEntity2 )( ycEntity* parent, uint32_t entityType, MM_Vec3 pos, MM_Vec3 scale, float rot, int32_t collisionLayer, SpawnPoint* spawnPoint, void*, void* ); // set last two parameters to nullptr
 
-	MM_CLASS ycEntity* ( *WorldGetGameRootEntity )( MM_CLASS World* world );
-	MM_CLASS ycEntity* ( *WorldGetSystemRootEntity )( MM_CLASS World* world );
-	MM_CLASS ycEntity* ( *WorldGetMenuRootEntity )( MM_CLASS World* world );
-	MM_CLASS ycEntity* ( *WorldGetHUDRootEntity )( MM_CLASS World* world );
-	MM_CLASS World* ( *EntityGetWorld )( MM_CLASS ycEntity* entity );
-	size_t( *EntityGetChildren )( MM_CLASS ycEntity* entity, MM_CLASS ycComponent** children, size_t bufElemCount ); // always returns the total count even if the buffer is not large enough; pass null/0 to just get the count
-	MM_CLASS ycComponent* ( *EntityGetMainComponent )( MM_CLASS ycEntity* entity );
-	struct MM_StringRef( *ComponentGetTypeName )( MM_CLASS ycComponent* component );
-	MM_CLASS ycComponent* ( *PlayerGetComponent )();
-	MM_CLASS ycEntity* ( *ComponentGetParent )( MM_CLASS ycComponent* component );
-	MM_Rtti( *ComponentGetType )( MM_CLASS ycComponent* component );
-	bool( *ComponentIsa )( MM_CLASS ycComponent* component, MM_Rtti rtti ); // includes inheritance
-	struct MM_Transform ( *EntityGetLocalTransform )( MM_CLASS ycEntity* entity );
-	void( *EntitySetLocalTransform )( MM_CLASS ycEntity* entity, const struct MM_Transform* transform );
-	struct MM_Transform ( *EntityGetWorldTransform )( MM_CLASS ycEntity* entity );
-	void( *EntitySetWorldTransform )( MM_CLASS ycEntity* entity, const struct MM_Transform* transform );
-	void( *ComponentMove )( MM_CLASS ycComponent* component, struct MM_Vec3 vel ); // works through a MoveComponent, if a relevant one exists; does nothing otherwise
+	ycEntity*     ( *WorldGetGameRootEntity )( World* world );
+	ycEntity*     ( *WorldGetSystemRootEntity )( World* world );
+	ycEntity*     ( *WorldGetMenuRootEntity )( World* world );
+	ycEntity*     ( *WorldGetHUDRootEntity )( World* world );
+	World*        ( *EntityGetWorld )( ycEntity* entity );
+	size_t        ( *EntityGetChildren )( ycEntity* entity, ycComponent** children, size_t bufElemCount ); // always returns the total count even if the buffer is not large enough; pass null/0 to just get the count
+	ycComponent*  ( *EntityGetMainComponent )( ycEntity* entity );
+	MM_StringRef  ( *ComponentGetTypeName )( ycComponent* component );
+	ycComponent*  ( *PlayerGetComponent )();
+	ycEntity*     ( *ComponentGetParent )( ycComponent* component );
+	MM_Rtti       ( *ComponentGetType )( ycComponent* component );
+	bool          ( *ComponentIsa )( ycComponent* component, MM_Rtti rtti ); // includes inheritance
+	MM_Transform  ( *EntityGetLocalTransform )( ycEntity* entity );
+	void          ( *EntitySetLocalTransform )( ycEntity* entity, const MM_Transform* transform );
+	MM_Transform  ( *EntityGetWorldTransform )( ycEntity* entity );
+	void          ( *EntitySetWorldTransform )( ycEntity* entity, const MM_Transform* transform );
+	void          ( *ComponentMove )( ycComponent* component, MM_Vec3 vel ); // works through a MoveComponent, if a relevant one exists; does nothing otherwise
 
 	// CombatCore component
-	float( *CombatCoreGetHealth )( MM_CLASS ycComponent* combatCore );
-	void( *CombatCoreSetHealth )( MM_CLASS ycComponent* combatCore, float hp );
-	float( *CombatCoreGetHealthMax )( MM_CLASS ycComponent* combatCore );
-	void( *CombatCoreSetHealthMax )( MM_CLASS ycComponent* combatCore, float hp );
-	MM_CLASS CombatShape* ( *CombatCoreGetAttackShape )( MM_CLASS ycComponent* combatCore );
-	MM_CLASS CombatShape* ( *CombatCoreGetDefenseShape )( MM_CLASS ycComponent* combatCore );
-	uint32_t ( *CombatCoreGetAttackMask )( MM_CLASS ycComponent* combatCore );
-	void ( *CombatCoreSetAttackMask )( MM_CLASS ycComponent* combatCore, uint32_t mask );
-	uint32_t ( *CombatCoreGetDefenseMask )( MM_CLASS ycComponent* combatCore );
-	void ( *CombatCoreSetDefenseMask )( MM_CLASS ycComponent* combatCore, uint32_t mask );
-	uint32_t( *CombatShapeGetShapeCount )( MM_CLASS CombatShape* shape );
-	bool( *CombatShapeIsAABB )( MM_CLASS CombatShape* shape, uint32_t shapeIndex );
-	bool( *CombatShapeIsSphere )( MM_CLASS CombatShape* shape, uint32_t shapeIndex );
-	bool( *CombatShapeIsLineSeg )( MM_CLASS CombatShape* shape, uint32_t shapeIndex );
-	bool( *CombatShapeGetAABB )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, struct MM_AABB* aabb ); // returns false if shape is not an AABB
-	bool( *CombatShapeGetSphere )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, struct MM_Sphere* sphere );
-	bool( *CombatShapeGetLineSeg )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, struct MM_LineSeg* lineSeg );
-	void( *CombatShapeSetAABB )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, const struct MM_AABB* aabb ); // these functions can append a new shape
-	void( *CombatShapeSetSphere )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, const struct MM_Sphere* sphere );
-	void( *CombatShapeSetLineSeg )( MM_CLASS CombatShape* shape, uint32_t shapeIndex, const struct MM_LineSeg* lineSeg );
+	float        ( *CombatCoreGetHealth )( ycComponent* combatCore );
+	void         ( *CombatCoreSetHealth )( ycComponent* combatCore, float hp );
+	float        ( *CombatCoreGetHealthMax )( ycComponent* combatCore );
+	void         ( *CombatCoreSetHealthMax )( ycComponent* combatCore, float hp );
+	CombatShape* ( *CombatCoreGetAttackShape )( ycComponent* combatCore );
+	CombatShape* ( *CombatCoreGetDefenseShape )( ycComponent* combatCore );
+	uint32_t     ( *CombatCoreGetAttackMask )( ycComponent* combatCore );
+	void         ( *CombatCoreSetAttackMask )( ycComponent* combatCore, uint32_t mask );
+	uint32_t     ( *CombatCoreGetDefenseMask )( ycComponent* combatCore );
+	void         ( *CombatCoreSetDefenseMask )( ycComponent* combatCore, uint32_t mask );
+	uint32_t     ( *CombatShapeGetShapeCount )( CombatShape* shape );
+	bool         ( *CombatShapeIsAABB )( CombatShape* shape, uint32_t shapeIndex );
+	bool         ( *CombatShapeIsSphere )( CombatShape* shape, uint32_t shapeIndex );
+	bool         ( *CombatShapeIsLineSeg )( CombatShape* shape, uint32_t shapeIndex );
+	bool         ( *CombatShapeGetAABB )( CombatShape* shape, uint32_t shapeIndex, MM_AABB* aabb ); // returns false if shape is not an AABB
+	bool         ( *CombatShapeGetSphere )( CombatShape* shape, uint32_t shapeIndex, MM_Sphere* sphere );
+	bool         ( *CombatShapeGetLineSeg )( CombatShape* shape, uint32_t shapeIndex, MM_LineSeg* lineSeg );
+	void         ( *CombatShapeSetAABB )( CombatShape* shape, uint32_t shapeIndex, const MM_AABB* aabb ); // these functions can append a new shape
+	void         ( *CombatShapeSetSphere )( CombatShape* shape, uint32_t shapeIndex, const MM_Sphere* sphere );
+	void         ( *CombatShapeSetLineSeg )( CombatShape* shape, uint32_t shapeIndex, const MM_LineSeg* lineSeg );
 
 	// GameAnim component
-	void( *GameAnimInit )( MM_CLASS ycComponent* anim, const char* filename, void* ); // set third argument to null
-	void( *GameAnimPlayDir )( MM_CLASS ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
-	void( *GameAnimPlay )( MM_CLASS ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
-	bool( *GameAnimIsPaused )( MM_CLASS ycComponent* anim );
-	void( *GameAnimSetPaused )( MM_CLASS ycComponent* anim, bool paused );
-	bool( *GameAnimIsDone )( MM_CLASS ycComponent* anim );
-	bool( *GameAnimIsNewFrame )( MM_CLASS ycComponent* anim );
-	uint32_t( *GameAnimGetSeqFrameIdx )( MM_CLASS ycComponent* anim );
-	struct MM_StringRef( *GameAnimGetSeqName )( MM_CLASS ycComponent* anim );
-	struct MM_StringRef( *GameAnimGetSeqNameNoDir )( MM_CLASS ycComponent* anim );
+	void        ( *GameAnimInit )( ycComponent* anim, const char* filename, void* ); // set third argument to null
+	void        ( *GameAnimPlayDir )( ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
+	void        ( *GameAnimPlay )( ycComponent* anim, const char* seqName, int32_t loops, float speed, bool forceRestart );
+	bool        ( *GameAnimIsPaused )( ycComponent* anim );
+	void        ( *GameAnimSetPaused )( ycComponent* anim, bool paused );
+	bool        ( *GameAnimIsDone )( ycComponent* anim );
+	bool        ( *GameAnimIsNewFrame )( ycComponent* anim );
+	uint32_t    ( *GameAnimGetSeqFrameIdx )( ycComponent* anim );
+	MM_StringRef( *GameAnimGetSeqName )( ycComponent* anim );
+	MM_StringRef( *GameAnimGetSeqNameNoDir )( ycComponent* anim );
 
 	// update queues
-	MM_CLASS ycUpdateQueue*( *WorldGetPlayerUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetEntityUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetEntityHitUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetSystemPreUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetSystemPostUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetEntityPostUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetEntityPostArtUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetEntityPreUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetPostSimUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetHUDUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetPauseUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *WorldGetPauseCheckUpdateQueue )( MM_CLASS World* world );
-	MM_CLASS ycUpdateQueue*( *GameGetWorldUpdateQueue )(); // the game's update queue of worlds
-	void*( *UpdateQueueAdd )( MM_CLASS ycUpdateQueue* updateQueue, MinaModUpdateQueueCallback cb, void* userData ); // returns a handle to be used with UpdateQueueRemove
-	void( *UpdateQueueRemove )( void* handle );
+	ycUpdateQueue*( *WorldGetPlayerUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetEntityUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetEntityHitUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetSystemPreUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetSystemPostUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetEntityPostUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetEntityPostArtUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetEntityPreUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetPostSimUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetHUDUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetPauseUpdateQueue )( World* world );
+	ycUpdateQueue*( *WorldGetPauseCheckUpdateQueue )( World* world );
+	ycUpdateQueue*( *GameGetWorldUpdateQueue )(); // the game's update queue of worlds
+	void*         ( *UpdateQueueAdd )( ycUpdateQueue* updateQueue, MinaModUpdateQueueCallback cb, void* userData ); // returns a handle to be used with UpdateQueueRemove
+	void          ( *UpdateQueueRemove )( void* handle );
 
 	// pause
-	void( *WorldPause )( MM_CLASS World* world, bool menu );
-	void( *WorldResume )( MM_CLASS World* world );
-	bool( *WorldIsPaused )( MM_CLASS World* world );
-	bool( *WorldIsPauseAllowed )( MM_CLASS World* world );
-	void( *WorldSetPauseAllowed )( MM_CLASS World* world, bool enable );
+	void( *WorldPause )( World* world, bool menu );
+	void( *WorldResume )( World* world );
+	bool( *WorldIsPaused )( World* world );
+	bool( *WorldIsPauseAllowed )( World* world );
+	void( *WorldSetPauseAllowed )( World* world, bool enable );
 
 	// weak pointers / safe references
-	struct MM_WeakPtr*( *CreateWeakPtr )( void* componentOrEntity );
-	void( *DestroyWeakPtr )( struct MM_WeakPtr* weakPtr );
-	void*( *WeakPtrGet )( struct MM_WeakPtr* weakPtr );
+	MM_WeakPtr*( *CreateWeakPtr )( void* componentOrEntity );
+	void       ( *DestroyWeakPtr )( MM_WeakPtr* weakPtr );
+	void*      ( *WeakPtrGet )( MM_WeakPtr* weakPtr );
 
 	// debug draw
-	void( *DebugDrawTexturedQuadUV )( MM_CLASS ycDrawUtil* dd, MM_CLASS ycTexture* tex, struct MM_Vec3 center, struct MM_Vec2 size, struct MM_Vec2 uvCenter, struct MM_Vec2 uvSize, struct MM_Color mulColor, bool disableDepthTest );
-	// to use the text functionality, a mod must load a debugdraw.font.yc file
-	MM_Vec3( *DebugDrawText )( MM_CLASS ycDrawUtil* dd, const char* text, struct MM_Color color, struct MM_Vec3 pos, float fontSize ); // returns dimensions of the text
-	MM_Vec3( *DebugDrawTextAlign )( MM_CLASS ycDrawUtil* dd, const char* text, struct MM_Color color, struct MM_Vec3 pos, uint64_t align, struct MM_Vec2 dimensions, float fontSize );
+	void   ( *DebugDrawTexturedQuadUV )( ycDrawUtil* dd, ycTexture* tex, MM_Vec3 center, MM_Vec2 size, MM_Vec2 uvCenter, MM_Vec2 uvSize, MM_Color mulColor, bool disableDepthTest );
+	// to use the text functionality, a mod must load a debugdraw.font.yc file (see examples/chests.cpp)
+	MM_Vec3( *DebugDrawText )( ycDrawUtil* dd, const char* text, MM_Color color, MM_Vec3 pos, float fontSize ); // returns dimensions of the text
+	MM_Vec3( *DebugDrawTextAlign )( ycDrawUtil* dd, const char* text, MM_Color color, MM_Vec3 pos, uint64_t align, MM_Vec2 dimensions, float fontSize );
 
 	// file access
-	MM_CLASS ycFileRefBase*( *CreateFileRef )( const char* name ); // this does not block, it will return immediately
-	void( *DestroyFileRef )( MM_CLASS ycFileRefBase* fileRef );
-	bool( *FileRefWaitForLoaded )( MM_CLASS ycFileRefBase* fileRef ); // blocks until the file is loaded or an error occurs, returns true if the file was loaded
-	const uint8_t*( *FileRefGetData )( MM_CLASS ycFileRefBase* fileRef );
-	size_t( *FileRefGetSize )( MM_CLASS ycFileRefBase* fileRef );
+	ycFileRefBase*( *CreateFileRef )( const char* name ); // this does not block, it will return immediately
+	void          ( *DestroyFileRef )( ycFileRefBase* fileRef );
+	bool          ( *FileRefWaitForLoaded )( ycFileRefBase* fileRef ); // blocks until the file is loaded or an error occurs, returns true if the file was loaded
+	const uint8_t*( *FileRefGetData )( ycFileRefBase* fileRef );
+	size_t        ( *FileRefGetSize )( ycFileRefBase* fileRef );
 
 	// player
-	struct MM_Vec3( *PlayerGetPos3 )();
-	void ( *PlayerSetPos3 )( struct MM_Vec3 pos );
-	MM_CLASS World*( *PlayerGetWorld )();
-	MM_CLASS WorldRegion*( *PlayerGetWorldRegion )();
+	MM_Vec3     ( *PlayerGetPos3 )();
+	void        ( *PlayerSetPos3 )( MM_Vec3 pos );
+	World*      ( *PlayerGetWorld )();
+	WorldRegion*( *PlayerGetWorldRegion )();
 
 	// GameComponent
-	MM_CLASS World*( *GameComponentGetWorld )( MM_CLASS GameComponent* component );
-	MM_CLASS WorldRegion*( *GameComponentGetWorldRegion )( MM_CLASS GameComponent* component );
+	World*      ( *GameComponentGetWorld )( GameComponent* component );
+	WorldRegion*( *GameComponentGetWorldRegion )( GameComponent* component );
 
 	// Spawn Points
 	/* valid spawn type names:
@@ -344,74 +362,174 @@ struct MinaModAPI
 		Disable                  Don't spawn at all.
 		SpawnChildren            Only spawn children, don't spawn us.
 	*/
-	uint8_t( *TileLevelEntityGetSpawnType )( const char* name ); // returns 0xff if no valid value is found
-	struct ycTileLevel2Entity*( *CreateTileLevelEntity )( const char* ycdata ); // returned pointer should be freed with DestroyTileLevelEntity
-	void( *DestroyTileLevelEntity )( struct ycTileLevel2Entity* tileLevelEntity );
-	char*( *SpawnPointGetTileLevelEntity )( MM_CLASS SpawnPoint* spawnPoint ); // returned string should be freed with Free()
-	MM_CLASS SpawnPoint*( *GameComponentGetSpawnPoint )( MM_CLASS GameComponent* component );
-	MM_CLASS SpawnManager*( *WorldRegionGetSpawnManager )( MM_CLASS WorldRegion* worldRegion );
-	MM_CLASS SpawnPoint*( *SpawnManagerCreateSpawnPoint )( MM_CLASS SpawnManager* spawnManager, MM_CLASS WorldRegion* worldRegion, struct MM_Vec3 pos, struct MM_Vec3 scale, float rot, uint32_t entityType, uint8_t spawnType, uint8_t tileLayerIndex, int32_t collisionLayerIndex );
-	MM_CLASS SpawnPoint*( *SpawnManagerCreateSpawnPoint2 )( MM_CLASS SpawnManager* spawnManager, MM_CLASS WorldRegion* worldRegion, const struct ycTileLevel2Entity* tileLevelEntity );
-	void( *SpawnManagerDestroySpawnPoint )( MM_CLASS SpawnManager* spawnManager, MM_CLASS SpawnPoint* spawnPoint );
-	MM_CLASS SpawnPoint*( *SpawnManagerGetSpawnPointByName )( MM_CLASS SpawnManager* spawnManager, const char* name );
-	MM_CLASS SpawnPoint*( *SpawnManagerGetSpawnPointByNameHash )( MM_CLASS SpawnManager* spawnManager, uint32_t nameHash );
-	MM_CLASS SpawnPoint*( *SpawnManagerGetSpawnPointByTileLevelEntity )( MM_CLASS SpawnManager* spawnManager, const ycTileLevel2Entity* tileLevelEntity );
-	MM_CLASS SpawnPoint*( *SpawnManagerGetSpawnPointByNameLevelHash )( MM_CLASS SpawnManager* spawnManager, uint64_t nameLevelHash );
-	uint8_t( *SpawnPointGetTileLayerIndex )( MM_CLASS SpawnPoint* spawnPoint );
-	bool( *SpawnPointIsPersistent )( MM_CLASS SpawnPoint* spawnPoint );
-	bool( *SpawnPointIsEntitySpawned )( MM_CLASS SpawnPoint* spawnPoint );
-	bool( *SpawnPointIsAwaitingSpawn )( MM_CLASS SpawnPoint* spawnPoint );
-	bool( *SpawnPointIsEntityCulled )( MM_CLASS SpawnPoint* spawnPoint );
-	bool( *SpawnPointIsEntityKilled )( MM_CLASS SpawnPoint* spawnPoint );
-	bool( *IsEntityPermanentKilled )( MM_CLASS SpawnPoint* spawnPoint, bool checkSecretDirt );
-	bool( *SpawnPointIsEntityPermanentKilledType )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointReset )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointResetPosToStart )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointResetAll )( MM_CLASS SpawnPoint* spawnPoint );
-	bool( *SpawnPointIsDisabled )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointDisable )( MM_CLASS SpawnPoint* spawnPoint ); // call Reset() to return to AwaitingSpawn
-	void( *SpawnPointSetSpawnType )( MM_CLASS SpawnPoint* spawnPoint, uint8_t spawnType );
-	uint8_t( *SpawnPointGetSpawnType )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointDisownParent )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetupParentSpawnPoint )( MM_CLASS SpawnPoint* spawnPoint, MM_CLASS SpawnPoint* parent ); // same as calling SetParent + SetChild, and also saves the starting position
-	void( *SpawnPointSetParentSpawnPoint )( MM_CLASS SpawnPoint* spawnPoint, MM_CLASS SpawnPoint* parent );
-	void( *SpawnPointSetChildSpawnPoint )( MM_CLASS SpawnPoint* spawnPoint, MM_CLASS SpawnPoint* child );
-	bool( *SpawnPointHasChildSpawnPoint )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetChildSpawnEnabled )( MM_CLASS SpawnPoint* spawnPoint, bool enabled );
-	bool( *SpawnPointIsChildSpawnEnabled )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetForceChildSpawn )( MM_CLASS SpawnPoint* spawnPoint, bool force );
-	bool( *SpawnPointIsForceChildSpawn )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetForceChildOffset )( MM_CLASS SpawnPoint* spawnPoint, bool force );
-	bool( *SpawnPointIsForceChildOffset )( MM_CLASS SpawnPoint* spawnPoint );
-	MM_CLASS SpawnPoint*( *SpawnPointGetParent )( MM_CLASS SpawnPoint* spawnPoint );
-	MM_CLASS SpawnPoint*( *SpawnPointGetChild )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetChildOffset )( MM_CLASS SpawnPoint* spawnPoint, struct MM_Vec3 offset );
-	struct MM_Vec3( *SpawnPointGetChildOffset )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetChildSpawnDir )( MM_CLASS SpawnPoint* spawnPoint, struct MM_Vec3 dir );
-	struct MM_Vec3( *SpawnPointGetChildSpawnDir )( MM_CLASS SpawnPoint* spawnPoint );
-	uint32_t( *SpawnPointGetEntityType )( MM_CLASS SpawnPoint* spawnPoint );
-	uint32_t( *SpawnPointGetNameHash )( MM_CLASS SpawnPoint* spawnPoint );
-	uint64_t( *SpawnPointGetNameLevelHash )( MM_CLASS SpawnPoint* spawnPoint );
-	uint32_t( *SpawnPointGetLayerNameHash )( MM_CLASS SpawnPoint* spawnPoint );
-	struct MM_AABB( *SpawnPointGetArea )( MM_CLASS SpawnPoint* spawnPoint );
-	int32_t( *SpawnPointGetCollisionLayer )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetCollisionLayer )( MM_CLASS SpawnPoint* spawnPoint, uint32_t idx );
-	struct MM_Vec3( *SpawnPointGetPos )( MM_CLASS SpawnPoint* spawnPoint );
-	struct MM_Vec3( *SpawnPointGetPosStart )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetPos )( MM_CLASS SpawnPoint* spawnPoint, struct MM_Vec3 pos );
-	struct MM_Vec3( *SpawnPointGetScale )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetScale )( MM_CLASS SpawnPoint* spawnPoint, struct MM_Vec3 scale );
-	float( *SpawnPointGetRotation )( MM_CLASS SpawnPoint* spawnPoint );
-	void( *SpawnPointSetRotation )( MM_CLASS SpawnPoint* spawnPoint, float rot );
-	void( *SpawnPointSetSpawnedEntity )( MM_CLASS SpawnPoint* spawnPoint, MM_CLASS GameComponent* entity );
-	MM_CLASS GameComponent*( *SpawnPointGetSpawnedEntity )( MM_CLASS SpawnPoint* spawnPoint );
-	struct MM_StringRef( *SpawnPointGetProperty )( MM_CLASS SpawnPoint* spawnPoint, const char* name, struct MM_StringRef defaultValue );
-	struct MM_StringRef( *SpawnPointGetPropertyByHash )( MM_CLASS SpawnPoint* spawnPoint, uint32_t hash, struct MM_StringRef defaultValue );
-	bool( *SpawnPointGetPropertyBool )( MM_CLASS SpawnPoint* spawnPoint, const char* propName, bool defaultValue );
-	float( *SpawnPointGetPropertyFloat )( MM_CLASS SpawnPoint* spawnPoint, const char* propName, float defaultValue );
-	int32_t( *SpawnPointGetPropertyInt )( MM_CLASS SpawnPoint* spawnPoint, const char* propName, int32_t defaultValue );
-	bool( *SpawnPointGetPropertyExists )( MM_CLASS SpawnPoint* spawnPoint, const char* propName );
-	bool( *SpawnPointGetPropertyExistsByHash )( MM_CLASS SpawnPoint* spawnPoint, uint32_t hash );
-	struct MM_Vec2( *SpawnPointSpawnPointTransformPos )( struct MM_Vec2 pos ); // transform a position from raw level format
-	struct MM_Vec2( *SpawnPointSpawnPointInvTransformPos )( struct MM_Vec2 pos ); // transform a position to raw level format
+	uint8_t            ( *TileLevelEntityGetSpawnType )( const char* name ); // returns 0xff if no valid value is found
+	ycTileLevel2Entity*( *CreateTileLevelEntity )( const char* ycdata ); // returned pointer should be freed with DestroyTileLevelEntity
+	void               ( *DestroyTileLevelEntity )( ycTileLevel2Entity* tileLevelEntity );
+	char*              ( *SpawnPointGetTileLevelEntity )( SpawnPoint* spawnPoint ); // returned string should be freed with Free()
+	SpawnPoint*        ( *GameComponentGetSpawnPoint )( GameComponent* component );
+	SpawnManager*      ( *WorldRegionGetSpawnManager )( WorldRegion* worldRegion );
+	SpawnPoint*        ( *SpawnManagerCreateSpawnPoint )( SpawnManager* spawnManager, WorldRegion* worldRegion, MM_Vec3 pos, MM_Vec3 scale, float rot, uint32_t entityType, uint8_t spawnType, uint8_t tileLayerIndex, int32_t collisionLayerIndex );
+	SpawnPoint*        ( *SpawnManagerCreateSpawnPoint2 )( SpawnManager* spawnManager, WorldRegion* worldRegion, const ycTileLevel2Entity* tileLevelEntity );
+	void               ( *SpawnManagerDestroySpawnPoint )( SpawnManager* spawnManager, SpawnPoint* spawnPoint );
+	SpawnPoint*        ( *SpawnManagerGetSpawnPointByName )( SpawnManager* spawnManager, const char* name );
+	SpawnPoint*        ( *SpawnManagerGetSpawnPointByNameHash )( SpawnManager* spawnManager, uint32_t nameHash );
+	SpawnPoint*        ( *SpawnManagerGetSpawnPointByTileLevelEntity )( SpawnManager* spawnManager, const ycTileLevel2Entity* tileLevelEntity );
+	SpawnPoint*        ( *SpawnManagerGetSpawnPointByNameLevelHash )( SpawnManager* spawnManager, uint64_t nameLevelHash );
+	uint8_t            ( *SpawnPointGetTileLayerIndex )( SpawnPoint* spawnPoint );
+	bool               ( *SpawnPointIsPersistent )( SpawnPoint* spawnPoint );
+	bool               ( *SpawnPointIsEntitySpawned )( SpawnPoint* spawnPoint );
+	bool               ( *SpawnPointIsAwaitingSpawn )( SpawnPoint* spawnPoint );
+	bool               ( *SpawnPointIsEntityCulled )( SpawnPoint* spawnPoint );
+	bool               ( *SpawnPointIsEntityKilled )( SpawnPoint* spawnPoint );
+	bool               ( *IsEntityPermanentKilled )( SpawnPoint* spawnPoint, bool checkSecretDirt );
+	bool               ( *SpawnPointIsEntityPermanentKilledType )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointReset )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointResetPosToStart )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointResetAll )( SpawnPoint* spawnPoint );
+	bool               ( *SpawnPointIsDisabled )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointDisable )( SpawnPoint* spawnPoint ); // call Reset() to return to AwaitingSpawn
+	void               ( *SpawnPointSetSpawnType )( SpawnPoint* spawnPoint, uint8_t spawnType );
+	uint8_t            ( *SpawnPointGetSpawnType )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointDisownParent )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetupParentSpawnPoint )( SpawnPoint* spawnPoint, SpawnPoint* parent ); // same as calling SetParent + SetChild, and also saves the starting position
+	void               ( *SpawnPointSetParentSpawnPoint )( SpawnPoint* spawnPoint, SpawnPoint* parent );
+	void               ( *SpawnPointSetChildSpawnPoint )( SpawnPoint* spawnPoint, SpawnPoint* child );
+	bool               ( *SpawnPointHasChildSpawnPoint )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetChildSpawnEnabled )( SpawnPoint* spawnPoint, bool enabled );
+	bool               ( *SpawnPointIsChildSpawnEnabled )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetForceChildSpawn )( SpawnPoint* spawnPoint, bool force );
+	bool               ( *SpawnPointIsForceChildSpawn )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetForceChildOffset )( SpawnPoint* spawnPoint, bool force );
+	bool               ( *SpawnPointIsForceChildOffset )( SpawnPoint* spawnPoint );
+	SpawnPoint*        ( *SpawnPointGetParent )( SpawnPoint* spawnPoint );
+	SpawnPoint*        ( *SpawnPointGetChild )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetChildOffset )( SpawnPoint* spawnPoint, MM_Vec3 offset );
+	MM_Vec3            ( *SpawnPointGetChildOffset )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetChildSpawnDir )( SpawnPoint* spawnPoint, MM_Vec3 dir );
+	MM_Vec3            ( *SpawnPointGetChildSpawnDir )( SpawnPoint* spawnPoint );
+	uint32_t           ( *SpawnPointGetEntityType )( SpawnPoint* spawnPoint );
+	uint32_t           ( *SpawnPointGetNameHash )( SpawnPoint* spawnPoint );
+	uint64_t           ( *SpawnPointGetNameLevelHash )( SpawnPoint* spawnPoint );
+	uint32_t           ( *SpawnPointGetLayerNameHash )( SpawnPoint* spawnPoint );
+	MM_AABB            ( *SpawnPointGetArea )( SpawnPoint* spawnPoint );
+	int32_t            ( *SpawnPointGetCollisionLayer )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetCollisionLayer )( SpawnPoint* spawnPoint, uint32_t idx );
+	MM_Vec3            ( *SpawnPointGetPos )( SpawnPoint* spawnPoint );
+	MM_Vec3            ( *SpawnPointGetPosStart )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetPos )( SpawnPoint* spawnPoint, MM_Vec3 pos );
+	MM_Vec3            ( *SpawnPointGetScale )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetScale )( SpawnPoint* spawnPoint, MM_Vec3 scale );
+	float              ( *SpawnPointGetRotation )( SpawnPoint* spawnPoint );
+	void               ( *SpawnPointSetRotation )( SpawnPoint* spawnPoint, float rot );
+	void               ( *SpawnPointSetSpawnedEntity )( SpawnPoint* spawnPoint, GameComponent* entity );
+	GameComponent*     ( *SpawnPointGetSpawnedEntity )( SpawnPoint* spawnPoint );
+	MM_StringRef       ( *SpawnPointGetPropertyString )( SpawnPoint* spawnPoint, const char* name, MM_StringRef defaultValue );
+	MM_StringRef       ( *SpawnPointGetPropertyByHash )( SpawnPoint* spawnPoint, uint32_t hash, MM_StringRef defaultValue );
+	bool               ( *SpawnPointGetPropertyBool )( SpawnPoint* spawnPoint, const char* propName, bool defaultValue );
+	float              ( *SpawnPointGetPropertyFloat )( SpawnPoint* spawnPoint, const char* propName, float defaultValue );
+	int32_t            ( *SpawnPointGetPropertyInt )( SpawnPoint* spawnPoint, const char* propName, int32_t defaultValue );
+	bool               ( *SpawnPointGetPropertyExists )( SpawnPoint* spawnPoint, const char* propName );
+	bool               ( *SpawnPointGetPropertyExistsByHash )( SpawnPoint* spawnPoint, uint32_t hash );
+	MM_Vec2            ( *SpawnPointSpawnPointTransformPos )( MM_Vec2 pos ); // transform a position from raw level format
+	MM_Vec2            ( *SpawnPointSpawnPointInvTransformPos )( MM_Vec2 pos ); // transform a position to raw level format
+
+	// set the contents of a file programmatically, this will only take effect after all existing references to the file are unloaded, and then new copies are loaded
+	// the buffer passed to this must be allocated with Alloc()
+	// calling this during MinaMod_Init is effectively the same as placing files in the mod's data directory
+	void( *SetDataFile )( const char* path, const void* buf, size_t len );
+
+	// GameAnim
+	float            ( *GameAnimGetCurrentFrameTime )( ycComponent* anim ); // time into current frame
+	void             ( *GameAnimAddFrameTime )( ycComponent* anim, float seconds ); // adds time to the current frame's time
+	void             ( *GameAnimSetFrameTime )( ycComponent* anim, float seconds ); // overwrites the current frame's time, but only this once (does not affect later plays of this frame)
+	uint32_t         ( *GameAnimGetNumLoopsPlayed )( ycComponent* anim );
+	void             ( *GameAnimSetVisible )( ycComponent* anim, bool visible );
+	bool             ( *GameAnimIsVisible )( ycComponent* anim );
+	void             ( *GameAnimSetMulColor )( ycComponent* anim, MM_Color color );
+	void             ( *GameAnimGetMulColor )( ycComponent* anim, MM_Color* outColor );
+	void             ( *GameAnimGetWorldTransform )( ycComponent* anim, MM_Transform* outTransform );
+	void             ( *GameAnimSetLocalTransform )( ycComponent* anim, const MM_Transform* transform );
+	void             ( *GameAnimGetLocalTransform )( ycComponent* anim, MM_Transform* outTransform );
+	void             ( *GameAnimSetLocalPosition )( ycComponent* anim, MM_Vec3 pos );
+	void             ( *GameAnimGetLocalPosition )( ycComponent* anim, MM_Vec3* outPos );
+	void             ( *GameAnimSetLocalScale )( ycComponent* anim, MM_Vec3 scale );
+	void             ( *GameAnimGetLocalScale )( ycComponent* anim, MM_Vec3* outScale );
+	void             ( *GameAnimSetLocalRotation )( ycComponent* anim, float rot );
+	float            ( *GameAnimGetLocalRotation )( ycComponent* anim );
+	uint32_t         ( *GameAnimLookAheadSeqFrameIdx )( ycComponent* anim, float elapsedTime ); // simulate the sequence for the elapsed time and return what the current frame would be
+	void             ( *GameAnimSetSeqFrameIdx )( ycComponent* anim, uint32_t seqFrameIdx ); // frame of the current sequence to display
+	uint32_t         ( *GameAnimGetNumSeqFrames )( ycComponent* anim ); // number of frames in the current sequence, 0 if no sequence is set
+	void             ( *GameAnimSetPlayRate )( ycComponent* anim, float playRate );
+	float            ( *GameAnimGetPlayRate )( ycComponent* anim );
+	bool             ( *GameAnimGetPropertyExists )( ycComponent* anim, const char* name );
+	bool             ( *GameAnimGetPropertyBool )( ycComponent* anim, const char* name );
+	const char*      ( *GameAnimGetPropertyString )( ycComponent* anim, const char* name, const char* defaultValue ); // defaultValue will be returned if no property exists
+	int32_t          ( *GameAnimGetPropertyInt )( ycComponent* anim, const char* name, int32_t defaultValue ); // defaultValue will be returned if no property exists
+	float            ( *GameAnimGetPropertyFloat )( ycComponent* anim, const char* name, float defaultValue ); // defaultValue will be returned if no property exists
+	void             ( *GameAnimGetPropertyPoint )( ycComponent* anim, const char* name, MM_Vec2* outPos);
+	void             ( *GameAnimGetPropertyAnchor )( ycComponent* anim, const char* name, MM_Vec2* outPos, float* outAngle );
+	void             ( *GameAnimGetPropertyRect )( ycComponent* anim, const char* name, MM_AABB* outValue );
+	void             ( *GameAnimGetPropertyCircle )( ycComponent* anim, const char* name, MM_Circle* outValue );
+	void             ( *GameAnimGetCurrentFrameBound )( ycComponent* anim, MM_AABB* outValue ); // the bounding box of the underlying raw frame
+	ycPaletteTexture*( *GameAnimGetPalette )( ycComponent* anim );
+	void             ( *GameAnimSetPalette )( ycComponent* anim, ycPaletteTexture* pal ); // palettes are reference counted, this adds a reference
+	void             ( *GameAnimSetPaletteFile )( ycComponent* anim, const char* filename );
+
+	// ycPaletteTexture
+	ycPaletteTexture*( *CreatePalette )( const char* filename );
+	ycPaletteTexture*( *ClonePalette )( ycPaletteTexture* pal );
+	void             ( *ReleasePalette )( ycPaletteTexture* pal ); // palettes are reference counted
+	int32_t          ( *PaletteGetIndex )( ycPaletteTexture* pal, MM_Color localColor );
+	void             ( *PaletteWrite )( ycPaletteTexture* pal, const MM_Color* colors, int32_t offset, int32_t count );
+	void             ( *PaletteWriteIndex )( ycPaletteTexture* pal, int32_t index, MM_Color color );
+	void             ( *PaletteSetWidth )( ycPaletteTexture* pal, int32_t width );
+	uint32_t         ( *PaletteGetWidth )( ycPaletteTexture* pal );
+	void             ( *PaletteGetLocalColor )( ycPaletteTexture* pal, int32_t index, MM_Color* colorOut ); // local palette only
+	void             ( *PaletteGetGlobalColor )( ycPaletteTexture* pal, int32_t index, MM_Color* colorOut ); // takes group palettes into account
+	void             ( *PaletteSetGroup )( ycPaletteTexture* pal, int32_t group ); // -1 is 'no group'
+	int32_t          ( *PaletteGetGroup )( ycPaletteTexture* pal );
+	ycPaletteTexture*( *PaletteGetGroupPal )( ycPaletteTexture* pal );
+
+	// ycCamera and GameCamera
+	/* GameCamera is a ycCamera, functions that take a ycCamera will work on a GameCamera, but the reverse is not true */
+	ycCamera*    ( *RenderPassGetCamera )( ycRenderPass* renderPass );
+	GameCamera*  ( *WorldGetGameCamera )( World* world );
+
+	const MM_Mtx*( *CameraGetProj )( ycCamera* camera );
+	void         ( *CameraSetProj )( ycCamera* camera, const MM_Mtx* proj );
+	const MM_Mtx*( *CameraGetView )( ycCamera* camera );
+	void         ( *CameraSetView )( ycCamera* camera, const MM_Mtx* view );
+	bool         ( *CameraIsOrtho )( ycCamera* camera );
+	const MM_Mtx*( *CameraGetViewToWorld )( ycCamera* camera ); // inverse view
+	const MM_Mtx*( *CameraGetProjToView )( ycCamera* camera ); // inverse proj
+	void         ( *CameraGetEyePos )( ycCamera* camera, MM_Vec3* outPos );
+	void         ( *CameraGetLookDir )( ycCamera* camera, MM_Vec3* outDir );
+
+	void         ( *GameCameraScreenToWorld )( GameCamera* gameCamera, MM_Vec2 screen, MM_Vec2* outPos );
+	void         ( *GameCameraWorldToScreen )( GameCamera* gameCamera, MM_Vec3 world, MM_Vec2* outPos );
+	bool         ( *GameCameraIsOnScreenPoint )( GameCamera* gameCamera, MM_AABB target );
+	bool         ( *GameCameraIsOnScreenRect )( GameCamera* gameCamera, MM_Vec3 center, MM_Vec3 extents );
+	bool         ( *GameCameraIsTracking )( GameCamera* gameCamera );
+	void         ( *GameCameraEnableTracking )( GameCamera* gameCamera, bool enable );
+	void         ( *GameCameraSetLocalBound )( GameCamera* gameCamera, MM_AABB bound );
+	void         ( *GameCameraGetLocalBound )( GameCamera* gameCamera, MM_AABB* outValue );
+	void         ( *GameCameraGetLocalBoundByIndex )( GameCamera* gameCamera, uint32_t roomIndex, MM_AABB* outValue );
+	void         ( *GameCameraSetLocalBoundActive )( GameCamera* gameCamera, bool active );
+	bool         ( *GameCameraIsLocalBoundActive )( GameCamera* gameCamera );
+	void         ( *GameCameraSetIgnoreBounds )( GameCamera* gameCamera, bool ignore );
+	bool         ( *GameCameraIsIgnoringBound )( GameCamera* gameCamera );
+	bool         ( *GameCameraIsPointInLocalBound )( GameCamera* gameCamera, MM_Vec3 pos );
+	bool         ( *GameCameraIsPointInAnyBound )( GameCamera* gameCamera, MM_Vec3 pos );
+	bool         ( *GameCameraIsBoxInLocalBound )( GameCamera* gameCamera, MM_AABB box );
+
+	// mouse
+	void( *MouseGetPos )( MM_Vec2* outPos ); // returns value in a space where the top left is (-1,1) and the bottom right is (1,-1)
+	void( *MouseGetPosPixels )( MM_Vec2* outPos ); // top left is (0,0) and the bottom right is whatever the window resolution is
+	void( *MouseGetPosGameCameraScreen )( GameCamera* gameCamera, MM_Vec2* screenPos ); // convert a value from MouseGetPos to the coordinate space expected by GameCameraScreenToWorld
+	bool( *MouseIsCursorVisible )();
+	void( *MouseSetCursorVisible )( bool visible );
+
+	// world
+	float( *WorldGetTimeScale )( World* world );
+	float( *WorldGetElapsedTime )( World* world ); // elapsed time taking time scale into account
 };
