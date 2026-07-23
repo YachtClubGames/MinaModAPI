@@ -13,7 +13,7 @@ ycGpuBuffer* vertexBuffer;
 ycGpuBuffer* indexBuffer;
 
 extern "C"
-__declspec(dllexport)
+MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {
 	Mina = mm;
