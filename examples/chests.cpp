@@ -53,7 +53,7 @@ ycTileLevel2Entity* ChestLevelEntity = nullptr;
 ycTileLevel2Entity* ChestContentsLevelEntities[ ARRAY_SIZE(kChestContentsDesc) ];
 
 extern "C"
-__declspec(dllexport)
+MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {
 	Mina = mm;
