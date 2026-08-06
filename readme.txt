@@ -5,8 +5,9 @@
 !! would downloading an .exe file!
 !!!!!!!!!!
 
-	             Modding functionality is currently in the
-	               "experimental-modding" branch on Steam
+                 Modding functionality is currently in the
+                   "experimental-modding" branch on Steam
+
 ###
 # Quick Start
 #
@@ -50,41 +51,15 @@ Other arguments:
   MinaMod_Init it will be called and passed a MinaModAPI pointer.
 
 ###
-# Hooks
+# Pending Compatibility Changes
 #
 
-FixedUpdate
-	struct FixedUpdateCtx {
-		float elapsed; // frame delta, 1/60 or 1/120
-	}
+A list of changes that will break compatibilty, so they will occur when the mod
+API leaves the experimental branch.
 
-GameStateTransition
-	struct GameStateTransitionCtx {
-		int32_t* pGameState; // pointer to the destination game state, can be modified
-	}
-
-GameInit // a bit later than MinaMod_Init, after most systems are initialized
-
-GameShutdown
-
-WorldConstruct
-	struct WorldConstructCtx {
-		World* world;
-	}
-
-WorldDestroy
-	struct WorldDestroyCtx {
-		World* world;
-	}
-
-WorldUpdate
-	struct WorldUpdateCtx {
-		World* world;
-		float elapsed;
-	}
-
-WorldUpdateEnd // occurs in the same function as WorldUpdate, but after other objects and systems have updated
-	struct WorldUpdateCtx {
-		World* world;
-		float elapsed;
-	}
+* Function re-ordering and organization
+* Functions that return structs will take a pointer for a return value
+* Older functions and hooks which are not prefixed will have them added, for
+  example IsItemCollected -> ItemsIsItemCollected
+* Mods will be required to request a specific version of the API (so future
+  changes like these can be made without compatibility breaks)

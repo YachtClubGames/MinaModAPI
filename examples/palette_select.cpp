@@ -5,6 +5,7 @@ palettes. Press P to randomize a color in the palettes of selected anims.
 
 #include "MinaModAPI.h"
 #include "MinaModEnums.h"
+#include "MinaModHooks.h"
 
 #include <math.h>
 #include <vector>
@@ -23,8 +24,7 @@ MM_Vec2 selectionEnd;
 
 void WorldUpdate( void* );
 
-extern "C"
-__declspec(dllexport)
+MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {
 	Mina = mm;
@@ -113,11 +113,6 @@ void DrawCrossThick( MM_Vec3 pos, float extents, float thickness, MM_Color color
 
 void WorldUpdate( void* pCtx )
 {
-	struct WorldUpdateCtx
-	{
-		World* world;
-		float elapsed;
-	};
 	WorldUpdateCtx* ctx = (WorldUpdateCtx*)pCtx;
 	World* world = ctx->world;
 	if( world != Mina->PlayerGetWorld() )

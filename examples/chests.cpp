@@ -1,5 +1,6 @@
 #include "MinaModAPI.h"
 #include "MinaModEnums.h"
+#include "MinaModHooks.h"
 
 #include <stdlib.h> // rand
 #include <vector>
@@ -10,13 +11,6 @@ struct TileLevelEntity
 {
 	World* world;
 	ycTileLevel2Entity* tileLevelEntity;
-};
-
-
-struct WorldUpdateCtx
-{
-	World* world;
-	float elapsed;
 };
 
 struct DebugMessage
@@ -52,7 +46,6 @@ const char* kChestContentsDesc[] =
 ycTileLevel2Entity* ChestLevelEntity = nullptr;
 ycTileLevel2Entity* ChestContentsLevelEntities[ ARRAY_SIZE(kChestContentsDesc) ];
 
-extern "C"
 MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {

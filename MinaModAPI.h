@@ -27,10 +27,15 @@
 #include "MinaModTypes.h"
 
 // portable export attribute for the MinaMod_Init entry point
-#ifdef _WIN32
-	#define MM_EXPORT __declspec(dllexport)
+#ifdef __cplusplus
+	#define MM_EXPORT_EXTERN extern "C"
 #else
-	#define MM_EXPORT __attribute__(( visibility( "default" ) ))
+	#define MM_EXPORT_EXTERN
+#endif
+#ifdef _WIN32
+	#define MM_EXPORT MM_EXPORT_EXTERN __declspec(dllexport)
+#else
+	#define MM_EXPORT MM_EXPORT_EXTERN __attribute__(( visibility( "default" ) ))
 #endif
 
 enum { MinaModAPI_Version = 1 };
@@ -53,7 +58,7 @@ struct MinaModAPI
 	bool      ( *IsSaveWriteEnabled )();
 	void      ( *ResetSave )(); // clear save data
 	void      ( *ResetSaveSlots )();
-	
+
 	int32_t   ( *GetActiveSaveSlot )(); // get the current save slot index
 	void      ( *SetActiveSaveSlot )( uint32_t slot ); // load a save slot into the active slot
 	bool      ( *SetSaveSlotContents )( uint32_t slot, const char* data ); // set the contents of a save slot with ycData text
@@ -69,7 +74,7 @@ struct MinaModAPI
 	void      ( *PlayerDie )();
 	void      ( *PlayerSetJoules )( int32_t );
 	int32_t   ( *PlayerGetJoules )();
-	void      ( *PlayerSetJoulesMax )( int32_t );
+	void      ( *PlayerSetJoulesUpgrade )( int32_t );
 	void      ( *PlayerSetHealth )( float );
 	float     ( *PlayerGetHealth )();
 	void      ( *PlayerSetHealthUpgrade )( int32_t );
@@ -539,4 +544,147 @@ struct MinaModAPI
 	// world
 	float( *WorldGetTimeScale )( World* world );
 	float( *WorldGetElapsedTime )( World* world ); // elapsed time taking time scale into account
+
+	// ycTextComponent
+	void         ( *TextComponentSetText )( ycComponent* textComponent, const char* const text );
+	const char*  ( *TextComponentGetText )( ycComponent* textComponent );
+	void         ( *TextComponentSetColor )( ycComponent* textComponent, MM_Color color );
+	void         ( *TextComponentGetColor )( ycComponent* textComponent, MM_Color* color );
+	float        ( *TextComponentGetWidth )( ycComponent* textComponent );
+	float        ( *TextComponentGetHeight )( ycComponent* textComponent );
+	void         ( *TextComponentSetVisible )( ycComponent* textComponent, bool visible );
+	bool         ( *TextComponentIsVisible )( ycComponent* textComponent );
+	void         ( *TextComponentSetRenderPass )( ycComponent* textComponent, ycRenderPass* renderPass );
+	ycRenderPass*( *TextComponentGetRenderPass )( ycComponent* textComponent );
+	uint32_t     ( *TextComponentGetTotalLineCount )( ycComponent* textComponent );
+	void         ( *TextComponentSetLocalTransform )( ycComponent* textComponent, const MM_Transform* transform );
+	void         ( *TextComponentGetLocalTransform )( ycComponent* textComponent, MM_Transform* transform );
+	void         ( *TextComponentSetLocalPosition )( ycComponent* textComponent, const MM_Vec3* pos );
+	void         ( *TextComponentGetLocalPosition )( ycComponent* textComponent, MM_Vec3* pos );
+	void         ( *TextComponentGetBounds )( ycComponent* textComponent, MM_AABB* bounds );
+
+	// misc
+	void             ( *PlayerUpdateStats )(); // this is usually automatically called by things like PlayerSetHealthUpgrade, PlayerSetStat, PlayerSetTrinketMax, PlayerSetTrinketCollected
+	bool             ( *WaterListenerIsInDeepWater )( WaterListener* waterListener, bool ignoreEnabled );
+	void             ( *PhysicsComponentGetAABB )( PhysicsComponent* physicsComponent, MM_AABB* aabb, bool local, uint32_t shapeFlags );
+	CarryableObject* ( *CarryManagerGetClosestCarryableObject )( CarryManager* carryManager, MM_AABB box, int32_t collisionLayer, float maxDist, int32_t* dstOverlappingObjectCount, uint64_t collideMaskIgnore );
+	void             ( *ItemsSetItemCollected )( int32_t index, bool collected, ItemCollection* collection, SaveSlot* slot  );
+	bool             ( *ItemsIsItemCollected )( int32_t index, ItemCollection* collection, SaveSlot* slot, bool includePawnShop, bool includeEarlyCollected );
+	void             ( *GetScreenResolution )( uint32_t* width, uint32_t* height );
+	const char*      ( *GetCurrentModPath )(); // gets the path to the mod's install folder, only valid during Mod_Init -- save it if you'll need it later!
+	uint32_t         ( *GetModVersion )( const char* name ); // returns uint32_t(-1) if the mod is not loaded
+
+	// menu
+	PagedMenu*               ( *CreatePagedMenu )( ycEntity* parent, OptionsMenu* container, const char* titleRowID, const char* iconSeq );
+	void                     ( *PagedMenuCreateDisplay )( PagedMenu* pagedMenu );
+	void                     ( *PagedMenuAddControl )( PagedMenu* pagedMenu, ycUpdateQueue* updateQueue, void* page, OptionsMenuControl* control );
+	void                     ( *PagedMenuActivate )( PagedMenu* pagedMenu, ycUpdateQueue* updateQueue );
+	OptionsMenuControl*      ( *CreateOptionsMenuControl )( ycEntity* parent, const char* labelName );
+	OptionsMenuControlSlider*( *CreateOptionsMenuControlSlider )( ycEntity* parent, const char* labelName, uint32_t maxValue, uint32_t defaultValue, uint32_t initialValue );
+
+	// entity
+	void                     ( *EntityDockComponent )( ycEntity* parent, ycComponent* child, uint32_t flags );
+	void                     ( *EntityDockEntity )( ycEntity* parent, ycEntity* child, uint32_t flags );
+	void                     ( *EntityReparentEntity )( ycEntity* newParent, ycEntity* child, uint32_t flags );
+
+	// world
+	void                     ( *WorldQueueDestroyEntity )( World* world, ycEntity* entity, const bool depthFirst );
+	void                     ( *WorldQueueDestroyComponent )( World* world, ycComponent* component, const bool depthFirst );
+	/*
+	Global,                   JugFire,                  FireTile, // global is only used under special circumstances
+	BrambleTile,              BramblePlant,             ShortcutPipe,
+	WaterValve,               AnimTile,                 WeaponMerchantAnimTile,
+	MirrorWarpAnimTile,       HealingWater,             BurrowWall,
+	Weather,                  Vent,                     WarpDoor,
+	WebTile,                  SpiritEnemy,              Statue,
+	StatueHead,               MoneyNumber,              AgroArea,
+	ShockTrooper,             EmptyGrave,               LightningRod,
+	SplitEnemy,               MagicNumber,              PressurePlate,
+	ArrowTrap,                DuchessBossTentacle,      DuchessBossThrone,
+	DukeNPC,                  GeyserHole,               PumpkinHandsEnemy,
+	KeyBlockChain,            KeyBlock,                 NPCPasserbyRect,
+	NPCPasserby,              MirrorRect,               Necromancer,
+	EggSac,                   Puffer,                   LeafPile,
+	SpringBellows,            PumpkinHandsHintArea,     JumpDownArea,
+	JumpDownPushoutArea,      AxeBlocker,               FishRaiser,
+	ShallowWaterArea,         LadderBlocker,            BoneDustTile,
+	OldManWaterBearNPC,       BrainBossEye,             BrainBossGroundTear,
+	BrainBossCrusher,         BrainBossSnake,           SkullkerIceSpike,
+	GrindRail,                GrindRailJunction,        EndlessSpawnZone,
+	MinerBossFractalTile,     RespawnMarkerArea,        GlassFlipper,
+	Minion,                   AbductedMinion,           AbductedElectricNode,
+	AbductedProj,             AbductedNPC,              RainbowPlatform,
+	SpawnRangeArea,           WanderBox,                DarknessArea,
+	FogThrowerProjectile,     TowerAttachmentDevice,    TowerCog,
+	TowerBarrier,             AreaMarker,               PitMarker,
+	SpecialCollision,         RoomSaveMarker,           IceBlock,
+	DakAckProj,               Rope,                     MaidNPC,
+	NPC,                      BurrowCheckpoint,         BarrierParasol,
+	ButlerFurfball,           LavaTrenchTile,           WeaponsmithProj,
+	Bomb,                     FloatingVirusCloud,       Breakable,
+	BardProj,                 BayouBandMember,          EvraSkeleton,
+	EvraOrb,                  ThorneMine,               ThorneMissile,
+	MothBossProj,             Fountain,                 BlackHolePit,
+	BrainlessBrain,           Kite,                     GhostReflection,
+	PhaseChangerFlame,        DinnerChair,              CatGhost,
+	DinnerCutscene,           TrainConductor,           TrainManager,
+	TrainAuthority,           TrainAnim,                LionelNPC,
+	ElectricFloorEffect,      TailorCurtain,            SidearmSaver,
+	Wrecker,                  RingMasterNPC,            MinigameRing,
+	BossRing,                 Interact,                 BouncePlant,
+	FireWall,                 SineKnife,                SecretPFDirt,
+	BossGate,                 LightningProj,            Huntsman,
+	Boat,                     GigaThorneNPC,            GigaLionelArm,
+	CampfireKid,              JugLobber,                Paladin,
+	MothNPC,                  BossArea,                 RushPlatform,
+	BoneBeachMonsterLayer,    Fish,                     FishShadow,
+	CrackIce,                 CrackIceLight,            FishingProj,
+	FishingRaft,              Pickup,                   Steam,
+	KickCan,                  CameraAutoScroll,         NewspaperStand,
+	VialDecoy,                TowerKillLine,            TrooperMine,
+	BasementSecret,           CreditsLionelBoat,        TimedSwitchOre,
+	RainbowPlatformStatic,    Mandrake,                 BossFodder,
+	Ooze,                     Abducted,                 MovingLayer,
+	FishAreaInfo,             FishBossProj,             TrainingDummy,
+	GigaLionelAbsorbParticle, CalciumHoleAnimTile,      Merman,
+	ShadowElevator,           PlanetHazard,             BigFrogBubble,
+	JugBottle,                Spark,                    SparkDoor,
+	WeatherEffect,
+	*/
+	size_t        ( *WorldGetEntityList )( World* world, const char* list, GameComponent** gameComponents, size_t bufElemCount ); // always returns the total count even if the buffer is not large enough; pass null/0 to just get the count
+	void          ( *WorldEnableEntityUpdate )( World* world, bool enable );
+	bool          ( *WorldIsEntityUpdateEnabled )( World* world );
+	GameComponent*( *WorldGetEntityBySpawnPoint )( World* world, const MM_StringRef* name );
+
+	// cheat manager
+	void( *CheatManagerSetCheatApplied )( int32_t cheat, bool active, uint32_t saveSlot ); // pass saveSlot=uint32_t(-1) to use the active save slot
+	bool( *CheatManagerIsCheatApplied )( int32_t cheat, uint32_t saveSlot );
+	void( *CheatManagerActivateSaveCheats )();
+
+	// compression/encoding
+	uint32_t( *wfLZ_GetMaxCompressedSize )( const uint32_t inSize );
+	uint32_t( *wfLZ_GetWorkMemSize )();
+	uint32_t( *wfLZ_CompressFast )( const uint8_t* const in, const uint32_t inSize, uint8_t* const out, const uint8_t* workMem, const uint32_t swapEndian );
+	uint32_t( *wfLZ_GetDecompressedSize )( const uint8_t* const in );
+	uint32_t( *wfLZ_GetCompressedSize )( const uint8_t* const in );
+	void    ( *wfLZ_Decompress )( const uint8_t* const in, uint8_t* const out );
+	uint64_t( *Base64CalcDecodedSize )( MM_StringRef v );
+	void    ( *Base64Decode )( uint8_t* dst, uint64_t dstSize, MM_StringRef str );
+	uint64_t( *Base64CalcEncodedSize )( uint64_t inSize );
+	void    ( *Base64Encode )( const uint8_t* src, uint64_t srcSize, char* dst, uint64_t dstSize );
+
+	// raw access to internal structures and data, it's possible that these may change in a patch
+	// the underlying ABI is _not stable_, use at your own risk
+	/*
+	g_defaultMem,               kTrinketNames,              s_rItems,
+	s_rItemCollection,          s_rWarpData,                g_cheatManager,
+	s_rShopDef,                 Mina::OnBurrowJump,         SessionManager::ActivateSaveSlot
+	Pickup::Init,               ShopMenu::InitState,        HubFountain::Bulb::Update,
+	Player::SetBurrowGround,    Player::RopeClimbStart,     LevelUpMenu::Update,
+	BouncePlant::CollideWith,   BouncePlant::BounceLaunch,  SpringBellows::CollideWith,
+	TrainAuthority::OnNPCEvent, Shop::IsOutOfStock,         ShopMenu::SetCursor,
+	PawnShopNPC::OnNPCEvent,    CheatManager::ToggleCheat,  CheatManager::SetCheatApplied,
+	Shop::Get,                  Player::PickUpAnyNearbyCarryableObject,
+	*/
+	void*( *GetSymAddr )( const char* name );
 };

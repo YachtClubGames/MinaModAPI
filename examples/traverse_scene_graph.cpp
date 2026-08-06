@@ -1,5 +1,6 @@
 #include "MinaModAPI.h"
 #include "MinaModEnums.h"
+#include "MinaModHooks.h"
 
 MinaModAPI* Mina = nullptr;
 
@@ -8,7 +9,6 @@ ycDrawUtil* dd = nullptr;
 
 void WorldUpdate( void* );
 
-extern "C"
 MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {
@@ -43,11 +43,6 @@ void Traverse( ycEntity* entity, uint32_t depth )
 
 void WorldUpdate( void* pCtx )
 {
-	struct WorldUpdateCtx
-	{
-		World* world;
-		float elapsed;
-	};
 	WorldUpdateCtx* ctx = (WorldUpdateCtx*)pCtx;
 
 	if( Mina->IsKeyDown( YC_KEY_G ) )

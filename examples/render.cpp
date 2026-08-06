@@ -1,5 +1,6 @@
 #include "MinaModAPI.h"
 #include "MinaModEnums.h"
+#include "MinaModHooks.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -12,7 +13,6 @@ ycTexture* texture = nullptr;
 ycGpuBuffer* vertexBuffer;
 ycGpuBuffer* indexBuffer;
 
-extern "C"
 MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {

@@ -1,5 +1,6 @@
 #include "MinaModAPI.h"
 #include "MinaModEnums.h"
+#include "MinaModHooks.h"
 
 MinaModAPI* Mina = nullptr;
 
@@ -9,7 +10,6 @@ MM_Rtti combatCoreRtti;
 
 void WorldUpdate( void* );
 
-extern "C"
 MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {
@@ -54,11 +54,6 @@ void TraverseCombat( ycEntity* entity )
 
 void WorldUpdate( void* pCtx )
 {
-	struct WorldUpdateCtx
-	{
-		World* world;
-		float elapsed;
-	};
 	WorldUpdateCtx* ctx = (WorldUpdateCtx*)pCtx;
 	World* world = ctx->world;
 	if( world != Mina->PlayerGetWorld() )

@@ -6,7 +6,6 @@ char* copiedSave = nullptr;
 
 void FixedUpdate( void* );
 
-extern "C"
 MM_EXPORT
 void MinaMod_Init( MinaModAPI* mm )
 {
