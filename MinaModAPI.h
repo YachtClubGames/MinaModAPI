@@ -32,11 +32,14 @@
 #else
 	#define MM_EXPORT_EXTERN
 #endif
-#ifdef _WIN32
+#ifdef _MSC_VER
 	#define MM_EXPORT MM_EXPORT_EXTERN __declspec(dllexport)
 #else
 	#define MM_EXPORT MM_EXPORT_EXTERN __attribute__(( visibility( "default" ) ))
 #endif
+#define MM_INIT( var ) \
+	MM_EXPORT int32_t MinaMod_APIVersion = MinaModAPI_Version; \
+	MM_EXPORT void MinaMod_Init( MinaModAPI* var )
 
 enum { MinaModAPI_Version = 1 };
 
@@ -588,8 +591,8 @@ struct MinaModAPI
 	void                     ( *EntityReparentEntity )( ycEntity* newParent, ycEntity* child, uint32_t flags );
 
 	// world
-	void                     ( *WorldQueueDestroyEntity )( World* world, ycEntity* entity, const bool depthFirst );
-	void                     ( *WorldQueueDestroyComponent )( World* world, ycComponent* component, const bool depthFirst );
+	void                     ( *WorldQueueDestroyEntity )( World* world, ycEntity* entity, bool _unused );
+	void                     ( *WorldQueueDestroyComponent )( World* world, ycComponent* component, bool _unused );
 	/*
 	Global,                   JugFire,                  FireTile, // global is only used under special circumstances
 	BrambleTile,              BramblePlant,             ShortcutPipe,
